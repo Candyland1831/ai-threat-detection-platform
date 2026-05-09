@@ -1,20 +1,19 @@
 # AI-Powered Cybersecurity Threat Detection Platform
 
-A cloud-native machine learning platform for cybersecurity threat detection built with Python, FastAPI, Docker, Kubernetes, Prometheus, Grafana, and GitHub Actions CI/CD.
+A cloud-native AI security platform that serves a machine learning threat detection model through a FastAPI API. The platform includes authentication, alert generation, analyst-friendly threat explanations, Prometheus metrics, Docker containerization, Kubernetes manifests, Terraform AWS infrastructure, and GitHub Actions CI/CD.
 
-## Features
+## Project Highlights
 
-- Real-time ML threat prediction API
-- JWT-protected prediction, alert, and explanation endpoints
-- Model metadata and health check endpoints
-- In-memory alert tracking for analyst review
-- AI-assisted threat explanation response for analysts
-- FastAPI + Swagger/OpenAPI integration
-- Docker containerization
-- Kubernetes orchestration
-- Prometheus metrics instrumentation
-- Grafana operational dashboards
-- GitHub Actions CI/CD pipeline
+- Machine learning inference API for cybersecurity threat detection
+- JWT-protected endpoints for prediction, alerts, and explanations
+- Model health and metadata endpoints
+- Alert generation with risk level, confidence, model version, and recommendation
+- Analyst-friendly threat explanation endpoint
+- Prometheus-compatible `/metrics` endpoint
+- Docker and Docker Compose support
+- Kubernetes deployment and service manifests
+- Terraform AWS infrastructure for ECS Fargate
+- GitHub Actions pipeline for tests, Terraform validation, Docker build, and container publishing
 
 ## Tech Stack
 
@@ -22,33 +21,61 @@ A cloud-native machine learning platform for cybersecurity threat detection buil
 - FastAPI
 - scikit-learn
 - Docker
+- Docker Compose
 - Kubernetes
+- Terraform
+- AWS ECS Fargate
+- AWS ECR
+- AWS Application Load Balancer
+- AWS CloudWatch
 - Prometheus
 - Grafana
 - GitHub Actions
-- Terraform
-- AWS ECS/Fargate
+
+## Architecture
+
+```text
+Client / Security Analyst
+  |
+  v
+FastAPI Application
+  |
+  +--> JWT Authentication
+  |
+  +--> ML Threat Detection Model
+  |
+  +--> Alert Generation
+  |
+  +--> Threat Explanation API
+  |
+  +--> Prometheus Metrics
+  |
+  v
+Docker / Kubernetes / AWS ECS Fargate
+```
 
 ## API Endpoints
 
-- `GET /` - platform status
-- `GET /health` - service and model health check
-- `GET /model-info` - model metadata and expected feature count
-- `POST /login` - returns a bearer token
-- `POST /predict` - runs authenticated threat prediction
-- `GET /alerts` - lists generated alerts
-- `POST /explain-threat` - returns analyst-friendly threat guidance
-- `GET /metrics` - Prometheus metrics
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `GET` | `/` | Platform status |
+| `GET` | `/health` | API and model health check |
+| `GET` | `/model-info` | Model metadata and expected feature count |
+| `POST` | `/login` | Returns a bearer token |
+| `POST` | `/predict` | Runs authenticated threat prediction |
+| `GET` | `/alerts` | Lists generated alerts |
+| `POST` | `/explain-threat` | Returns analyst-friendly threat guidance |
+| `GET` | `/metrics` | Prometheus metrics |
 
 ## Local Demo
 
-Install dependencies:
+Clone the repository and install dependencies:
 
 ```powershell
 pip install -r requirements.txt
 ```
 
-Run tests:
+Run the tests:
 
 ```powershell
 pytest -q
@@ -60,13 +87,13 @@ Start the API:
 uvicorn app.main:app --reload
 ```
 
-Open Swagger:
+Open Swagger UI:
 
 ```text
 http://127.0.0.1:8000/docs
 ```
 
-Login with:
+Login credentials for the demo:
 
 ```text
 username: admin
@@ -75,15 +102,49 @@ password: password123
 
 Use `sample_prediction_request.json` as the request body for `/predict`.
 
+Example prediction response:
+
+```json
+{
+  "alert_id": "generated-alert-id",
+  "prediction": 0,
+  "threat_status": "normal_activity",
+  "risk_level": "LOW",
+  "confidence": 0.86,
+  "model_version": "security-random-forest-v1",
+  "requested_by": "admin",
+  "recommendation": "No immediate action required. Continue monitoring for repeated or correlated activity."
+}
+```
+
+## Docker
+
+Build the image:
+
+```bash
+docker build -t ai-threat-detection-platform .
+```
+
+Run the container:
+
+```bash
+docker run -p 8000:8000 ai-threat-detection-platform
+```
+
 ## DevOps CI/CD
 
-The GitHub Actions pipeline validates the platform on every pull request and push to `main` or `master`.
+The GitHub Actions workflow runs on pull requests and pushes to `main` or `master`.
 
-- Installs Python dependencies
-- Compiles the FastAPI and model training code
-- Runs API smoke tests with `pytest`
-- Builds the Docker image
-- Publishes the image to GitHub Container Registry on push events
+Pipeline jobs:
+
+- Install Python dependencies
+- Compile FastAPI and model training files
+- Run API tests with `pytest`
+- Check Terraform formatting
+- Run `terraform init -backend=false`
+- Run `terraform validate`
+- Build the Docker image
+- Publish the image to GitHub Container Registry on push events
 
 Container image:
 
@@ -93,19 +154,20 @@ ghcr.io/candyland1831/ai-threat-detection-platform
 
 ## AWS Infrastructure
 
-Terraform infrastructure lives in `terraform/`.
+Terraform infrastructure is located in `terraform/`.
 
 The AWS stack provisions:
 
 - VPC with public subnets
+- Internet Gateway and route table
 - ECR repository for the API container image
-- ECS Fargate cluster and service
+- ECS Fargate cluster, task definition, and service
 - Application Load Balancer
 - Security groups
-- CloudWatch logs
-- IAM task execution role
+- CloudWatch log group
+- IAM ECS task execution role
 
-Basic commands:
+Basic Terraform commands:
 
 ```bash
 cd terraform
@@ -114,39 +176,57 @@ terraform plan
 terraform apply
 ```
 
-See `terraform/README.md` for the deployment flow and cleanup steps.
+See `terraform/README.md` for image push steps and cleanup instructions.
 
-## Architecture
+## Kubernetes
 
-```text
-Client Requests
-  |
-  v
-FastAPI ML API
-  |
-  v
-ML Threat Detection Model
-  |
-  v
-Alert and Explanation API
-  |
-  v
-Prometheus Metrics
-  |
-  v
-Grafana Dashboards
+Kubernetes manifests are located in `kubernetes/`.
+
+- `deployment.yaml` defines the FastAPI application deployment
+- `service.yaml` exposes the API service
+
+## Testing
+
+The test suite validates:
+
+- Health endpoint
+- Model metadata endpoint
+- Login success and failure
+- Authenticated prediction flow
+- Feature count validation
+- Alert listing
+- Threat explanation response
+
+Run tests:
+
+```bash
+pytest -q
 ```
 
 ## Interview Summary
 
-This project demonstrates a cloud-native AI security platform. It trains and serves a cybersecurity threat detection model, protects inference with authentication, generates analyst-friendly alert responses, exposes Prometheus metrics, containerizes the application with Docker, provides Kubernetes and Terraform AWS infrastructure, and validates changes with GitHub Actions CI/CD.
+This project demonstrates a cloud-native AI security platform. It combines machine learning inference, API development, authentication, observability, containerization, infrastructure as code, and CI/CD.
+
+Strong interview talking points:
+
+- Served a trained cybersecurity ML model with FastAPI
+- Added JWT authentication around sensitive inference endpoints
+- Generated alert objects with risk level, confidence, and recommendations
+- Exposed Prometheus metrics for service monitoring
+- Containerized the platform with Docker
+- Added Kubernetes deployment scaffolding
+- Built AWS ECS Fargate infrastructure with Terraform
+- Added CI/CD that validates both application code and Terraform infrastructure
+- Debugged CI failures caused by differences between local Windows and GitHub Linux runners
 
 ## Future Enhancements
 
-- Persistent alert storage with PostgreSQL or DynamoDB
-- LLM-powered threat intelligence enrichment
-- Advanced threat analytics dashboards
-- Automated retraining workflows
+- Store alerts in PostgreSQL or DynamoDB
+- Add a production identity provider instead of demo credentials
+- Add LLM-powered threat intelligence enrichment
+- Add Grafana dashboard JSON files
+- Add automated model retraining workflow
+- Deploy the Terraform stack to AWS and document the live URL
 
 ## Author
 
