@@ -1,82 +1,183 @@
-from prometheus_client import Counter, Histogram, generate_latest
-from fastapi.responses import Response
-from fastapi import FastAPI
+from pathlib import Path
+from datetime import datetime, timezone
+from uuid import uuid4
+
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 import joblib
 import numpy as np
-import time
+
+from prometheus_fastapi_instrumentator import Instrumentator
+
+from app.auth import (
+    authenticate_user,
+    create_access_token,
+    verify_token
+)
 
 app = FastAPI(
     title="AI Threat Detection Platform",
+    description="Cloud-native API for AI-assisted cybersecurity threat detection.",
     version="1.0.0"
 )
 
-# Metrics
-REQUEST_COUNT = Counter(
-    "prediction_requests_total",
-    "Total prediction requests"
-)
+Instrumentator().instrument(app).expose(app)
 
-PREDICTION_LATENCY = Histogram(
-    "prediction_latency_seconds",
-    "Prediction latency"
-)
+MODEL_PATH = Path("model/security_model.pkl")
+MODEL_VERSION = "security-random-forest-v1"
 
-# Load trained ML model
-model = joblib.load("model/security_model.pkl")
+if not MODEL_PATH.exists():
+    raise RuntimeError(f"Model artifact not found at {MODEL_PATH}")
 
+model = joblib.load(MODEL_PATH)
+MODEL_FEATURE_COUNT = int(getattr(model, "n_features_in_", 0))
+ALERTS = []
 
-# Request schema
-class SecurityFeatures(BaseModel):
+class PredictionRequest(BaseModel):
     data: list[float]
 
+class ThreatExplanationRequest(BaseModel):
+    prediction: int
+    risk_level: str
+    confidence: float | None = None
 
-# Home endpoint
 @app.get("/")
 def home():
     return {
-        "message": "AI Threat Detection Platform Running"
+        "message": "AI Threat Detection Platform Running",
+        "docs_url": "/docs",
+        "health_url": "/health"
     }
 
+@app.get("/health")
+def health():
+    return {
+        "status": "healthy",
+        "model_loaded": True,
+        "model_version": MODEL_VERSION,
+        "expected_features": MODEL_FEATURE_COUNT
+    }
 
-# Prediction endpoint
-@app.post("/predict")
-def predict(features: SecurityFeatures):
+@app.get("/model-info")
+def model_info():
+    return {
+        "model_name": "UNSW-NB15 Random Forest Threat Classifier",
+        "model_version": MODEL_VERSION,
+        "model_type": type(model).__name__,
+        "artifact_path": str(MODEL_PATH),
+        "expected_features": MODEL_FEATURE_COUNT,
+        "labels": {
+            "0": "normal_activity",
+            "1": "threat_detected"
+        }
+    }
 
-    REQUEST_COUNT.inc()
+@app.post("/login")
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends()
+):
 
-    start_time = time.time()
+    user = authenticate_user(
+        form_data.username,
+        form_data.password
+    )
 
-    input_data = np.array(features.data).reshape(1, -1)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid credentials"
+        )
 
-    prediction = model.predict(input_data)[0]
-
-    probability = model.predict_proba(input_data)[0]
-
-    confidence = round(max(probability) * 100, 2)
-
-    risk_level = "LOW"
-
-    if confidence > 85:
-        risk_level = "HIGH"
-    elif confidence > 60:
-        risk_level = "MEDIUM"
-
-    latency = time.time() - start_time
-
-    PREDICTION_LATENCY.observe(latency)
+    access_token = create_access_token(
+        data={"sub": user["username"]}
+    )
 
     return {
-        "threat_prediction": int(prediction),
-        "confidence": confidence,
-        "risk_level": risk_level
+        "access_token": access_token,
+        "token_type": "bearer"
     }
 
+@app.post("/predict")
+def predict(
+    request: PredictionRequest,
+    username: str = Depends(verify_token)
+):
 
-# Prometheus metrics endpoint
-@app.get("/metrics")
-def metrics():
-    return Response(
-        generate_latest(),
-        media_type="text/plain"
+    try:
+        if MODEL_FEATURE_COUNT and len(request.data) != MODEL_FEATURE_COUNT:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Expected {MODEL_FEATURE_COUNT} features, received {len(request.data)}"
+            )
+
+        input_data = np.array(request.data).reshape(1, -1)
+        prediction = int(model.predict(input_data)[0])
+        confidence = None
+
+        if hasattr(model, "predict_proba"):
+            probability = model.predict_proba(input_data)[0]
+            confidence = round(float(max(probability)), 4)
+
+        risk_level = "HIGH" if prediction == 1 else "LOW"
+        threat_status = "threat_detected" if prediction == 1 else "normal_activity"
+        alert = {
+            "alert_id": str(uuid4()),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "prediction": prediction,
+            "threat_status": threat_status,
+            "risk_level": risk_level,
+            "confidence": confidence,
+            "model_version": MODEL_VERSION,
+            "requested_by": username
+        }
+
+        ALERTS.append(alert)
+
+        return {
+            **alert,
+            "recommendation": get_recommendation(risk_level)
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+@app.get("/alerts")
+def list_alerts(username: str = Depends(verify_token)):
+    return {
+        "alerts": ALERTS,
+        "total": len(ALERTS),
+        "requested_by": username
+    }
+
+@app.post("/explain-threat")
+def explain_threat(
+    request: ThreatExplanationRequest,
+    username: str = Depends(verify_token)
+):
+    status = "threat" if request.prediction == 1 else "normal network activity"
+    confidence_text = (
+        f"{round(request.confidence * 100, 2)}%"
+        if request.confidence is not None
+        else "not available"
     )
+
+    return {
+        "summary": f"The model classified this event as {status}.",
+        "risk_level": request.risk_level,
+        "confidence": confidence_text,
+        "analyst_guidance": get_recommendation(request.risk_level),
+        "requested_by": username
+    }
+
+def get_recommendation(risk_level: str):
+    if risk_level.upper() == "HIGH":
+        return "Review the source host, destination service, authentication activity, and recent privilege changes."
+
+    return "No immediate action required. Continue monitoring for repeated or correlated activity."
