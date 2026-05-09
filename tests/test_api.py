@@ -1,6 +1,14 @@
+from unittest.mock import patch
+
 from fastapi.testclient import TestClient
 
-from app.main import app
+with patch("joblib.load") as mock_load:
+    mock_model = mock_load.return_value
+    mock_model.n_features_in_ = 43
+    mock_model.predict.return_value = [0]
+    mock_model.predict_proba.return_value = [[0.86, 0.14]]
+
+    from app.main import app
 
 
 client = TestClient(app)
