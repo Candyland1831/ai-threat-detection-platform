@@ -1,0 +1,10 @@
+aws_region    = "us-east-1"
+project_name  = "ai-threat-detection"
+environment   = "dev"
+desired_count = 1
+
+# Option 1: leave empty and push your image to the ECR repository this stack creates.
+container_image = ""
+
+# Option 2: deploy an already-published image.
+# container_image = "ghcr.io/candyland1831/ai-threat-detection-platform:master"

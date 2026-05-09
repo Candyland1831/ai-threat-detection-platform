@@ -7,3 +7,10 @@ __pycache__/
 data/
 *.lock
 *.exe
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+crash.log
+crash.*.log
+*.tfplan

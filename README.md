@@ -26,6 +26,8 @@ A cloud-native machine learning platform for cybersecurity threat detection buil
 - Prometheus
 - Grafana
 - GitHub Actions
+- Terraform
+- AWS ECS/Fargate
 
 ## API Endpoints
 
@@ -89,6 +91,31 @@ Container image:
 ghcr.io/candyland1831/ai-threat-detection-platform
 ```
 
+## AWS Infrastructure
+
+Terraform infrastructure lives in `terraform/`.
+
+The AWS stack provisions:
+
+- VPC with public subnets
+- ECR repository for the API container image
+- ECS Fargate cluster and service
+- Application Load Balancer
+- Security groups
+- CloudWatch logs
+- IAM task execution role
+
+Basic commands:
+
+```bash
+cd terraform
+terraform init
+terraform plan
+terraform apply
+```
+
+See `terraform/README.md` for the deployment flow and cleanup steps.
+
 ## Architecture
 
 ```text
@@ -112,11 +139,10 @@ Grafana Dashboards
 
 ## Interview Summary
 
-This project demonstrates a cloud-native AI security platform. It trains and serves a cybersecurity threat detection model, protects inference with authentication, generates analyst-friendly alert responses, exposes Prometheus metrics, containerizes the application with Docker, provides Kubernetes manifests, and validates changes with GitHub Actions CI/CD.
+This project demonstrates a cloud-native AI security platform. It trains and serves a cybersecurity threat detection model, protects inference with authentication, generates analyst-friendly alert responses, exposes Prometheus metrics, containerizes the application with Docker, provides Kubernetes and Terraform AWS infrastructure, and validates changes with GitHub Actions CI/CD.
 
 ## Future Enhancements
 
-- AWS deployment with ECS or EKS
 - Persistent alert storage with PostgreSQL or DynamoDB
 - LLM-powered threat intelligence enrichment
 - Advanced threat analytics dashboards
