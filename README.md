@@ -203,22 +203,6 @@ Run tests:
 pytest -q
 ```
 
-## Interview Summary
-
-This project demonstrates a cloud-native AI security platform. It combines machine learning inference, API development, authentication, observability, containerization, infrastructure as code, and CI/CD.
-
-Strong interview talking points:
-
-- Served a trained cybersecurity ML model with FastAPI
-- Added JWT authentication around sensitive inference endpoints
-- Generated alert objects with risk level, confidence, and recommendations
-- Exposed Prometheus metrics for service monitoring
-- Containerized the platform with Docker
-- Added Kubernetes deployment scaffolding
-- Built AWS ECS Fargate infrastructure with Terraform
-- Added CI/CD that validates both application code and Terraform infrastructure
-- Debugged CI failures caused by differences between local Windows and GitHub Linux runners
-
 ## Future Enhancements
 
 - Store alerts in PostgreSQL or DynamoDB
