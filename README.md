@@ -1,54 +1,54 @@
 # AI-Powered Cybersecurity Threat Detection Platform
 
-A cloud-native AI security platform that serves a machine learning threat detection model through a FastAPI API. The platform includes authentication, alert generation, analyst-friendly threat explanations, Prometheus metrics, Docker containerization, Kubernetes manifests, Terraform AWS infrastructure, and GitHub Actions CI/CD.
+I built this project to practice bringing AI, cloud engineering, security, and DevOps together in one realistic platform. The goal is to take a trained machine learning model for network threat detection and serve it through a production-style API that can be tested, monitored, containerized, and deployed with cloud infrastructure.
 
-## Project Highlights
+At a high level, the platform accepts network/security feature data, runs it through a scikit-learn model, returns a threat prediction, creates an alert, and gives the analyst a short explanation of what to do next.
 
-- Machine learning inference API for cybersecurity threat detection
-- JWT-protected endpoints for prediction, alerts, and explanations
-- Model health and metadata endpoints
-- Alert generation with risk level, confidence, model version, and recommendation
-- Analyst-friendly threat explanation endpoint
-- Prometheus-compatible `/metrics` endpoint
-- Docker and Docker Compose support
-- Kubernetes deployment and service manifests
-- Terraform AWS infrastructure for ECS Fargate
-- GitHub Actions pipeline for tests, Terraform validation, Docker build, and container publishing
+## What This Project Shows
+
+This project is meant to demonstrate more than just model training. It shows the surrounding engineering work needed to make an AI service usable:
+
+- A FastAPI service for real-time model inference
+- JWT authentication for protected endpoints
+- Threat predictions with risk level, confidence, model version, and recommendations
+- Alert generation and alert listing
+- A simple analyst explanation endpoint
+- Prometheus metrics for monitoring
+- Docker support for containerized deployment
+- Kubernetes manifests for orchestration
+- Terraform infrastructure for AWS ECS Fargate
+- GitHub Actions CI/CD for testing, Terraform validation, Docker build, and container publishing
 
 ## Tech Stack
 
-- Python
-- FastAPI
-- scikit-learn
-- Docker
-- Docker Compose
-- Kubernetes
-- Terraform
-- AWS ECS Fargate
-- AWS ECR
-- AWS Application Load Balancer
-- AWS CloudWatch
-- Prometheus
-- Grafana
-- GitHub Actions
+The platform uses:
 
-## Architecture
+- Python and FastAPI for the API
+- scikit-learn for the machine learning model
+- Docker and Docker Compose for containerization
+- Kubernetes for deployment scaffolding
+- Terraform for AWS infrastructure
+- AWS ECS Fargate, ECR, ALB, and CloudWatch for the cloud architecture
+- Prometheus and Grafana for monitoring
+- GitHub Actions for CI/CD
+
+## How It Works
 
 ```text
-Client / Security Analyst
+Security data
   |
   v
-FastAPI Application
+FastAPI API
   |
-  +--> JWT Authentication
+  +--> Authenticate request
   |
-  +--> ML Threat Detection Model
+  +--> Run ML threat prediction
   |
-  +--> Alert Generation
+  +--> Generate alert
   |
-  +--> Threat Explanation API
+  +--> Return analyst-friendly response
   |
-  +--> Prometheus Metrics
+  +--> Expose metrics for monitoring
   |
   v
 Docker / Kubernetes / AWS ECS Fargate
@@ -56,20 +56,20 @@ Docker / Kubernetes / AWS ECS Fargate
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
+| Method | Endpoint | What it does |
 | --- | --- | --- |
-| `GET` | `/` | Platform status |
-| `GET` | `/health` | API and model health check |
-| `GET` | `/model-info` | Model metadata and expected feature count |
+| `GET` | `/` | Confirms the platform is running |
+| `GET` | `/health` | Checks API and model health |
+| `GET` | `/model-info` | Shows model metadata and expected feature count |
 | `POST` | `/login` | Returns a bearer token |
-| `POST` | `/predict` | Runs authenticated threat prediction |
+| `POST` | `/predict` | Runs an authenticated threat prediction |
 | `GET` | `/alerts` | Lists generated alerts |
-| `POST` | `/explain-threat` | Returns analyst-friendly threat guidance |
-| `GET` | `/metrics` | Prometheus metrics |
+| `POST` | `/explain-threat` | Returns simple analyst guidance |
+| `GET` | `/metrics` | Exposes Prometheus metrics |
 
-## Local Demo
+## Running It Locally
 
-Clone the repository and install dependencies:
+Install the project dependencies:
 
 ```powershell
 pip install -r requirements.txt
@@ -93,16 +93,16 @@ Open Swagger UI:
 http://127.0.0.1:8000/docs
 ```
 
-Login credentials for the demo:
+For the demo login, use:
 
 ```text
 username: admin
 password: password123
 ```
 
-Use `sample_prediction_request.json` as the request body for `/predict`.
+After logging in, use `sample_prediction_request.json` as the request body for `/predict`.
 
-Example prediction response:
+Example response:
 
 ```json
 {
@@ -131,20 +131,20 @@ Run the container:
 docker run -p 8000:8000 ai-threat-detection-platform
 ```
 
-## DevOps CI/CD
+## CI/CD
 
-The GitHub Actions workflow runs on pull requests and pushes to `main` or `master`.
+The GitHub Actions pipeline runs automatically on pushes and pull requests. It checks both the application and the infrastructure code.
 
-Pipeline jobs:
+The pipeline:
 
-- Install Python dependencies
-- Compile FastAPI and model training files
-- Run API tests with `pytest`
-- Check Terraform formatting
-- Run `terraform init -backend=false`
-- Run `terraform validate`
-- Build the Docker image
-- Publish the image to GitHub Container Registry on push events
+- Installs Python dependencies
+- Compiles the application files
+- Runs the API test suite
+- Checks Terraform formatting
+- Initializes Terraform without a backend
+- Validates the Terraform configuration
+- Builds the Docker image
+- Publishes the container image to GitHub Container Registry on push events
 
 Container image:
 
@@ -154,20 +154,20 @@ ghcr.io/candyland1831/ai-threat-detection-platform
 
 ## AWS Infrastructure
 
-Terraform infrastructure is located in `terraform/`.
+The Terraform code in `terraform/` defines an AWS deployment using ECS Fargate.
 
-The AWS stack provisions:
+It creates:
 
-- VPC with public subnets
-- Internet Gateway and route table
-- ECR repository for the API container image
-- ECS Fargate cluster, task definition, and service
-- Application Load Balancer
+- A VPC with public subnets
+- An Internet Gateway and route table
+- An ECR repository for the API image
+- An ECS Fargate cluster and service
+- An Application Load Balancer
 - Security groups
-- CloudWatch log group
-- IAM ECS task execution role
+- A CloudWatch log group
+- An ECS task execution role
 
-Basic Terraform commands:
+Basic Terraform workflow:
 
 ```bash
 cd terraform
@@ -176,41 +176,60 @@ terraform plan
 terraform apply
 ```
 
-See `terraform/README.md` for image push steps and cleanup instructions.
+The Terraform README includes more detail on pushing the Docker image and cleaning up resources.
 
 ## Kubernetes
 
-Kubernetes manifests are located in `kubernetes/`.
-
-- `deployment.yaml` defines the FastAPI application deployment
-- `service.yaml` exposes the API service
+The `kubernetes/` folder includes basic deployment and service manifests for running the API in a Kubernetes cluster.
 
 ## Testing
 
-The test suite validates:
+The test suite covers the main platform flow:
 
-- Health endpoint
-- Model metadata endpoint
+- Health checks
+- Model metadata
 - Login success and failure
-- Authenticated prediction flow
+- Authenticated prediction
 - Feature count validation
 - Alert listing
 - Threat explanation response
 
-Run tests:
+Run tests with:
 
 ```bash
 pytest -q
 ```
 
-## Future Enhancements
+## What I Learned
 
-- Store alerts in PostgreSQL or DynamoDB
-- Add a production identity provider instead of demo credentials
-- Add LLM-powered threat intelligence enrichment
-- Add Grafana dashboard JSON files
-- Add automated model retraining workflow
-- Deploy the Terraform stack to AWS and document the live URL
+This project helped me practice the full path from model artifact to deployable service. I worked through model loading, API design, authentication, test coverage, Docker builds, Terraform infrastructure, and CI/CD.
+
+One useful lesson was debugging a GitHub Actions failure caused by differences between my local Windows environment and GitHub's Linux runner. Fixing that taught me why environment consistency matters in real DevOps and MLOps work.
+
+## How I Would Describe It
+
+> A cloud-native AI threat detection platform that serves a trained cybersecurity model through FastAPI, protects prediction endpoints with authentication, generates alerts and analyst guidance, exposes Prometheus metrics, and includes Docker, Kubernetes, Terraform AWS infrastructure, and GitHub Actions CI/CD.
+
+The strongest parts to discuss are:
+
+- How the ML model is served through an API
+- How authentication protects the prediction workflow
+- How alerts and recommendations make the raw model output more useful
+- How Prometheus metrics support monitoring
+- How Docker and Kubernetes prepare the app for deployment
+- How Terraform defines the AWS ECS Fargate infrastructure
+- How CI/CD validates both the application and infrastructure code
+
+## Future Improvements
+
+Next, I would like to add:
+
+- Persistent alert storage with PostgreSQL or DynamoDB
+- A production identity provider instead of demo credentials
+- Grafana dashboard JSON files
+- LLM-powered threat intelligence enrichment
+- Automated model retraining
+- A live AWS deployment URL
 
 ## Author
 
