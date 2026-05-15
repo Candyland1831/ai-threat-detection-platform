@@ -149,7 +149,7 @@ The pipeline:
 Container image:
 
 ```text
-ghcr.io/candyland1831/ai-threat-detection-platform
+ghcr.io/candicetech/ai-threat-detection-platform
 ```
 
 ## AWS Infrastructure

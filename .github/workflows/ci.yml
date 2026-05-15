@@ -15,7 +15,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE_NAME: ghcr.io/candyland1831/ai-threat-detection-platform
+  IMAGE_NAME: ghcr.io/candicetech/ai-threat-detection-platform
   PYTHONPATH: ${{ github.workspace }}
 
 jobs:
