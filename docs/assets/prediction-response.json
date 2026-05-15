@@ -1,0 +1,11 @@
+﻿{
+    "alert_id":  "6bffbe86-748a-42e4-b07c-2f88c2c29ada",
+    "created_at":  "2026-05-15T15:57:44.238310+00:00",
+    "prediction":  0,
+    "threat_status":  "normal_activity",
+    "risk_level":  "LOW",
+    "confidence":  0.86,
+    "model_version":  "security-random-forest-v1",
+    "requested_by":  "admin",
+    "recommendation":  "No immediate action required. Continue monitoring for repeated or correlated activity."
+}

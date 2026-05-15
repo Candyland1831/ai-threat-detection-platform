@@ -4,6 +4,8 @@ I built this project to practice bringing AI, cloud engineering, security, and D
 
 At a high level, the platform accepts network/security feature data, runs it through a scikit-learn model, returns a threat prediction, creates an alert, and gives the analyst a short explanation of what to do next.
 
+Demo screenshots and a walkthrough are available in `docs/demo.md`.
+
 ## What This Project Shows
 
 This project is meant to demonstrate more than just model training. It shows the surrounding engineering work needed to make an AI service usable:
@@ -101,6 +103,35 @@ password: password123
 ```
 
 After logging in, use `sample_prediction_request.json` as the request body for `/predict`.
+
+## Screenshots And Demo
+
+I added a visual walkthrough in `docs/demo.md` with screenshots of Swagger UI, the health check, model metadata, and a real prediction response.
+
+Demo screenshots:
+
+- `docs/assets/swagger-ui.png`
+- `docs/assets/health-endpoint.png`
+- `docs/assets/model-info-endpoint.png`
+- `docs/assets/prediction-response.png`
+
+There is also a small PowerShell demo script:
+
+```powershell
+.\scripts\demo_api.ps1
+```
+
+If Windows blocks script execution, run it with a one-time bypass:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\demo_api.ps1
+```
+
+If your API is running on another port:
+
+```powershell
+.\scripts\demo_api.ps1 -BaseUrl http://127.0.0.1:8010
+```
 
 Example response:
 
