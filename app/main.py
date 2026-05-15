@@ -1,6 +1,7 @@
 from pathlib import Path
 from datetime import datetime, timezone
 from uuid import uuid4
+import json
 
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
@@ -24,8 +25,10 @@ app = FastAPI(
 
 Instrumentator().instrument(app).expose(app)
 
-MODEL_PATH = Path("model/security_model.pkl")
-MODEL_VERSION = "security-random-forest-v1"
+MODEL_METADATA_PATH = Path("model/model_metadata.json")
+MODEL_METADATA = json.loads(MODEL_METADATA_PATH.read_text()) if MODEL_METADATA_PATH.exists() else {}
+MODEL_PATH = Path(MODEL_METADATA.get("artifact_path", "model/security_model.pkl"))
+MODEL_VERSION = MODEL_METADATA.get("model_version", "security-random-forest-v1")
 
 if not MODEL_PATH.exists():
     raise RuntimeError(f"Model artifact not found at {MODEL_PATH}")
@@ -62,15 +65,18 @@ def health():
 @app.get("/model-info")
 def model_info():
     return {
-        "model_name": "UNSW-NB15 Random Forest Threat Classifier",
+        "model_name": MODEL_METADATA.get("model_name", "UNSW-NB15 Random Forest Threat Classifier"),
         "model_version": MODEL_VERSION,
-        "model_type": type(model).__name__,
+        "model_type": MODEL_METADATA.get("model_type", type(model).__name__),
         "artifact_path": str(MODEL_PATH),
         "expected_features": MODEL_FEATURE_COUNT,
-        "labels": {
+        "dataset": MODEL_METADATA.get("dataset"),
+        "labels": MODEL_METADATA.get("labels", {
             "0": "normal_activity",
             "1": "threat_detected"
-        }
+        }),
+        "baseline_metrics": MODEL_METADATA.get("baseline_metrics"),
+        "notes": MODEL_METADATA.get("notes")
     }
 
 @app.post("/login")

@@ -34,6 +34,21 @@ The platform uses:
 - Prometheus and Grafana for monitoring
 - GitHub Actions for CI/CD
 
+## Model Metadata
+
+The model artifact is stored at `model/security_model.pkl`, and metadata for the running model is stored in `model/model_metadata.json`.
+
+The metadata includes:
+
+- Model name and version
+- Dataset name
+- Expected feature count
+- Prediction labels
+- Baseline evaluation metrics
+- Notes about future retraining
+
+The current model is a baseline model. Its precision is stronger than its recall, which means it is better at being confident when it flags a threat than it is at catching every threat. That gives the project a realistic next step: improve recall through better preprocessing, model tuning, and retraining.
+
 ## How It Works
 
 ```text

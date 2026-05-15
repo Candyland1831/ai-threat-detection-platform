@@ -1,0 +1,24 @@
+{
+  "model_name": "UNSW-NB15 Random Forest Threat Classifier",
+  "model_version": "security-random-forest-v1",
+  "model_type": "RandomForestClassifier",
+  "artifact_path": "model/security_model.pkl",
+  "dataset": "UNSW-NB15",
+  "target_column": "label",
+  "dropped_columns": ["attack_cat"],
+  "categorical_columns": ["proto", "service", "state"],
+  "expected_features": 43,
+  "labels": {
+    "0": "normal_activity",
+    "1": "threat_detected"
+  },
+  "baseline_metrics": {
+    "evaluation_dataset": "data/UNSW_NB15_testing-set.csv",
+    "rows": 175341,
+    "accuracy": 0.3973,
+    "precision": 0.8191,
+    "recall": 0.147,
+    "f1": 0.2493
+  },
+  "notes": "Baseline model metadata for the platform demo. Metrics should be improved with saved preprocessing pipelines, model tuning, and retraining."
+}

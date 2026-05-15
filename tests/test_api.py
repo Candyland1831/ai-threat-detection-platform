@@ -57,6 +57,8 @@ def test_model_info_returns_artifact_metadata():
     assert body["model_version"] == "security-random-forest-v1"
     assert body["expected_features"] == 43
     assert body["labels"]["0"] == "normal_activity"
+    assert body["dataset"] == "UNSW-NB15"
+    assert body["baseline_metrics"]["f1"] == 0.2493
 
 
 def test_login_returns_bearer_token_for_valid_user():
